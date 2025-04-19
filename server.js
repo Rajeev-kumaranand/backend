@@ -52,7 +52,11 @@ app.post('/api/register', async (req, res) => {
                     age
                 })
                 let token = jwt.sign({ username, userid: user._id }, process.env.JWT_SECRET);
-                res.cookie("token", token)
+                res.cookie("token", token , {
+                    httpOnly: true,
+                    secure: true,            
+                    sameSite: "None",        
+                  })
 
                 res.status(201).json({ message: "User registered", user: user });
             });
@@ -77,7 +81,11 @@ app.post('/api/login', async (req, res) => {
             bcrypt.compare(password, notexist.password, function (err, result) {
                 if (result) {
                     let token = jwt.sign({ username, userid: notexist._id }, process.env.JWT_SECRET);
-                    res.cookie("token", token)
+                    res.cookie("token", token,{
+                        httpOnly: true,
+                        secure: true,         
+                        sameSite: "None"     
+                      })
                     res.status(201).json({ message: "Login success", user: notexist });
                 } else {
                     res.status(200).json({ message: "Invalid password" });
