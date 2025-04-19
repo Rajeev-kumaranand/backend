@@ -196,7 +196,11 @@ app.post("/api/updatepost", upload.single('updatedPost'), async (req, res) => {
 app.post("/api/logout", async (req, res) => {
     try {
         let token = ""
-        res.cookie("token", token)
+        res.cookie("token", token ,{
+            httpOnly: true,
+            secure: true,         
+            sameSite: "None"     
+          })
         res.status(200).json({ message: "LogOUT+" })
     } catch (error) {
         res.status(400).json({ message: "SOmething wronG" })
