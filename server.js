@@ -14,18 +14,19 @@ const verifytoken = require('./middlewares/tokenverify');
 const { error } = require('console');
 const mongoose = require('mongoose')
 
-
+// Nothing ||  process.env.FRONTEND_URL,
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
-    credentials: true 
+    // origin: process.env.FRONTEND_URL,
+    origin: 'http://localhost:5173',
+    credentials: true
 }));
 app.use(express.json())
 app.use(cookieParser())
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log("Connected to MongoDB Atlas"))
-  .catch(err => console.log("DB error:", err));
+    .then(() => console.log("Connected to MongoDB Atlas"))
+    .catch(err => console.log("DB error:", err));
 
 
 // Disk storage Used
@@ -52,11 +53,11 @@ app.post('/api/register', async (req, res) => {
                     age
                 })
                 let token = jwt.sign({ username, userid: user._id }, process.env.JWT_SECRET);
-                res.cookie("token", token , {
+                res.cookie("token", token, {
                     httpOnly: true,
-                    secure: true,            
-                    sameSite: "None",        
-                  })
+                    secure: true,
+                    sameSite: "None",
+                })
 
                 res.status(201).json({ message: "User registered", user: user });
             });
@@ -71,7 +72,7 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body
-    console.log(username,password)
+    console.log(username, password)
     try {
         let notexist = await userModule.findOne({ username })
         console.log(notexist)
@@ -81,11 +82,11 @@ app.post('/api/login', async (req, res) => {
             bcrypt.compare(password, notexist.password, function (err, result) {
                 if (result) {
                     let token = jwt.sign({ username, userid: notexist._id }, process.env.JWT_SECRET);
-                    res.cookie("token", token,{
+                    res.cookie("token", token, {
                         httpOnly: true,
-                        secure: true,         
-                        sameSite: "None"     
-                      })
+                        secure: true,
+                        sameSite: "None"
+                    })
                     res.status(201).json({ message: "Login success", user: notexist });
                 } else {
                     res.status(200).json({ message: "Invalid password" });
@@ -132,8 +133,8 @@ app.post('/api/post', upload.single('post'), async (req, res) => {
 app.post('/api/getposts', async (req, res) => {
     let token = req.cookies.token
     try {
-        if (!token)  return res.status(401).json({ error: "Unauthorizeddd" }) 
-        
+        if (!token) return res.status(401).json({ error: "Unauthorizeddd" })
+
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET)
         let user = await userModule.findOne({ username: decoded.username }).populate("posts")
@@ -180,6 +181,7 @@ app.post("/api/deletepost", async (req, res) => {
 // })
 app.post("/api/updatepost", upload.single('updatedPost'), async (req, res) => {
     const { content, postid } = req.body
+    console.log(content)
 
     let updatedPostUrl = req.file ? `/uploads/${req.file.filename}` : null
     const updateData = { content };
@@ -187,7 +189,7 @@ app.post("/api/updatepost", upload.single('updatedPost'), async (req, res) => {
         updateData.postimg = updatedPostUrl;
     }
     try {
-        let updatepost = await postModule.findOneAndUpdate({ _id: postid },   updateData, { new: true })
+        let updatepost = await postModule.findOneAndUpdate({ _id: postid }, updateData, { new: true })
         res.status(200).json({ updatepost })
     } catch (error) {
         res.status(400).json({ message: "SOmething wronG" })
@@ -196,11 +198,11 @@ app.post("/api/updatepost", upload.single('updatedPost'), async (req, res) => {
 app.post("/api/logout", async (req, res) => {
     try {
         let token = ""
-        res.cookie("token", token ,{
+        res.cookie("token", token, {
             httpOnly: true,
-            secure: true,         
-            sameSite: "None"     
-          })
+            secure: true,
+            sameSite: "None"
+        })
         res.status(200).json({ message: "LogOUT+" })
     } catch (error) {
         res.status(400).json({ message: "SOmething wronG" })
@@ -275,6 +277,8 @@ app.post("/api/SearchedUser", async (req, res) => {
 
 // app.listen(3000)
 const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-  });
+});
+
+COMMIT EC-1
